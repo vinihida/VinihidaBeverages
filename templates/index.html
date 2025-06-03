@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Vinihida Beverages | Premium Drinks{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative bg-gradient-to-br from-wine-900 via-wine-800 to-wine-700 text-white">
+    <div class="absolute inset-0 bg-black opacity-20"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-serif font-bold mb-6">
+                Bem-vindo ao
+                <span class="text-gold-400">Vinihida</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+                Descubra nossa coleção premium de vinhos, whiskies e cervejas artesanais
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('products_page') }}" 
+                   class="bg-gold-500 hover:bg-gold-600 text-white px-8 py-3 rounded-lg text-lg font-medium transition duration-300">
+                    Explorar Produtos
+                </a>
+                <a href="{{ url_for('products_page', category_id=1) }}" 
+                   class="border-2 border-white hover:bg-white hover:text-wine-800 text-white px-8 py-3 rounded-lg text-lg font-medium transition duration-300">
+                    Ver Vinhos
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">
+                Nossas Categorias
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Explore nossa seleção cuidadosamente curada de bebidas premium
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% set category_info = [
+                {'id': 1, 'name': 'Vinhos', 'description': 'Vinhos selecionados de todo o mundo', 'image': 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop&crop=center', 'color': 'wine'},
+                {'id': 2, 'name': 'Whiskies', 'description': 'Whiskies premium e raros', 'image': 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&h=300&fit=crop&crop=center', 'color': 'amber'},
+                {'id': 3, 'name': 'Cervejas', 'description': 'Cervejas artesanais especiais', 'image': 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop&crop=center', 'color': 'yellow'}
+            ] %}
+            
+            {% for cat in category_info %}
+            <div class="group relative bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
+                <div class="aspect-w-16 aspect-h-12">
+                    <img src="{{ cat.image }}" alt="{{ cat.name }}" 
+                         class="w-full h-48 object-cover group-hover:scale-105 transition duration-300">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 class="text-2xl font-serif font-bold mb-2">{{ cat.name }}</h3>
+                    <p class="text-sm mb-4">{{ cat.description }}</p>
+                    <a href="{{ url_for('products_page', category_id=cat.id) }}" 
+                       class="inline-block bg-white text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition duration-300">
+                        Ver Produtos
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+{% if featured_products %}
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">
+                Produtos em Destaque
+            </h2>
+            <p class="text-lg text-gray-600">
+                Nossa seleção especial para você
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for product in featured_products %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                <div class="aspect-w-1 aspect-h-1">
+                    <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=300&h=300&fit=crop&crop=center' }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-48 object-cover">
+                </div>
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ product.name }}</h3>
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ product.description }}</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-2xl font-bold text-wine-600">R$ {{ "%.2f"|format(product.price) }}</span>
+                        <a href="{{ url_for('product_detail_page', product_id=product.id) }}" 
+                           class="bg-wine-600 hover:bg-wine-700 text-white px-4 py-2 rounded-md text-sm transition duration-300">
+                            Ver Detalhes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-8">
+            <a href="{{ url_for('products_page') }}" 
+               class="inline-block bg-wine-600 hover:bg-wine-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition duration-300">
+                Ver Todos os Produtos
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- About Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-6">
+                    Por que escolher a Vinihida?
+                </h2>
+                <div class="space-y-6">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-wine-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-wine-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Qualidade Premium</h3>
+                            <p class="text-gray-600">Selecionamos apenas as melhores bebidas para nossos clientes.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-wine-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-wine-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4-8-4m16 0v10l-8 4-8-4V7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Entrega Segura</h3>
+                            <p class="text-gray-600">Embalagem especializada para garantir que seus produtos chegem perfeitos.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-wine-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-wine-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Atendimento Especializado</h3>
+                            <p class="text-gray-600">Nossa equipe está pronta para ajudar você a escolher a bebida perfeita.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="relative">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&crop=center" 
+                     alt="Nossa loja" 
+                     class="rounded-lg shadow-lg">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-16 bg-wine-900 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl md:text-4xl font-serif font-bold mb-4">
+            Fique por dentro das novidades
+        </h2>
+        <p class="text-lg mb-8 max-w-2xl mx-auto">
+            Receba ofertas exclusivas e novidades sobre nossos produtos diretamente em seu e-mail.
+        </p>
+        <div class="max-w-md mx-auto flex gap-4">
+            <input type="email" 
+                   placeholder="Seu e-mail" 
+                   class="flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold-500">
+            <button class="bg-gold-500 hover:bg-gold-600 px-6 py-3 rounded-lg font-medium transition duration-300">
+                Inscrever
+            </button>
+        </div>
+    </div>
+</section>
+{% endblock %} 

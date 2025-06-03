@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if current_category %}{{ current_category.name }} - Vinihida Beverages{% else %}Produtos - Vinihida Beverages{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="bg-white">
+    <!-- Header -->
+    <div class="bg-gray-50 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-3xl font-serif font-bold text-gray-900">
+                    {% if current_category %}
+                        {{ current_category.name }}
+                    {% else %}
+                        Todos os Produtos
+                    {% endif %}
+                </h1>
+                <p class="mt-2 text-lg text-gray-600">
+                    {% if current_category %}
+                        Explore nossa seleção de {{ current_category.name.lower() }}
+                    {% else %}
+                        Descubra nossa coleção completa de bebidas premium
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="lg:grid lg:grid-cols-4 lg:gap-8">
+            <!-- Sidebar with filters -->
+            <div class="hidden lg:block">
+                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Categorias</h3>
+                    <div class="space-y-2">
+                        <a href="{{ url_for('products_page') }}" 
+                           class="block px-3 py-2 text-sm font-medium rounded-md 
+                           {% if not current_category %}bg-wine-100 text-wine-700{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                            Todos os Produtos
+                        </a>
+                        {% for category in categories %}
+                        <a href="{{ url_for('products_page', category_id=category.id) }}" 
+                           class="block px-3 py-2 text-sm font-medium rounded-md 
+                           {% if current_category and current_category.id == category.id %}bg-wine-100 text-wine-700{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                            {{ category.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+
+                    <hr class="my-6">
+
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Filtrar por Preço</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-gray-300 text-wine-600 focus:ring-wine-500">
+                            <span class="ml-2 text-sm text-gray-600">Até R$ 50</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-gray-300 text-wine-600 focus:ring-wine-500">
+                            <span class="ml-2 text-sm text-gray-600">R$ 50 - R$ 100</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-gray-300 text-wine-600 focus:ring-wine-500">
+                            <span class="ml-2 text-sm text-gray-600">R$ 100 - R$ 200</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded border-gray-300 text-wine-600 focus:ring-wine-500">
+                            <span class="ml-2 text-sm text-gray-600">Acima de R$ 200</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="lg:col-span-3">
+                <!-- Mobile filter button -->
+                <div class="lg:hidden mb-4">
+                    <button type="button" 
+                            class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900"
+                            x-data="{ open: false }" 
+                            @click="open = !open">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Filtros
+                    </button>
+                </div>
+
+                <!-- Sort options -->
+                <div class="flex items-center justify-between mb-6">
+                    <p class="text-sm text-gray-700">
+                        Mostrando {{ products|length }} produto{% if products|length != 1 %}s{% endif %}
+                    </p>
+                    <div class="relative">
+                        <select class="appearance-none bg-white border border-gray-300 rounded-md py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-wine-500 focus:border-wine-500">
+                            <option>Mais relevantes</option>
+                            <option>Menor preço</option>
+                            <option>Maior preço</option>
+                            <option>Mais vendidos</option>
+                            <option>Mais recentes</option>
+                        </select>
+                        <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Products grid -->
+                {% if products %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for product in products %}
+                    <div class="group relative bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                        <div class="aspect-w-1 aspect-h-1 overflow-hidden rounded-t-lg">
+                            <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=300&h=300&fit=crop&crop=center' }}" 
+                                 alt="{{ product.name }}" 
+                                 class="w-full h-48 object-cover group-hover:scale-105 transition duration-300">
+                        </div>
+                        
+                        <div class="p-4">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">
+                                <a href="{{ url_for('product_detail_page', product_id=product.id) }}" class="hover:text-wine-600">
+                                    {{ product.name }}
+                                </a>
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ product.description }}</p>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-xl font-bold text-wine-600">
+                                    R$ {{ "%.2f"|format(product.price) }}
+                                </span>
+                                
+                                <div class="flex space-x-2">
+                                    <button onclick="addToCart({{ product.id }})" 
+                                            class="bg-wine-600 hover:bg-wine-700 text-white px-3 py-1.5 rounded-md text-sm transition duration-300">
+                                        Adicionar
+                                    </button>
+                                    <a href="{{ url_for('product_detail_page', product_id=product.id) }}" 
+                                       class="border border-wine-600 text-wine-600 hover:bg-wine-50 px-3 py-1.5 rounded-md text-sm transition duration-300">
+                                        Ver
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2"></path>
+                    </svg>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum produto encontrado</h3>
+                    <p class="text-gray-600">Tente ajustar seus filtros ou explore outras categorias.</p>
+                    <a href="{{ url_for('products_page') }}" 
+                       class="inline-block mt-4 bg-wine-600 hover:bg-wine-700 text-white px-4 py-2 rounded-md text-sm transition duration-300">
+                        Ver Todos os Produtos
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Pagination (if needed) -->
+                {% if products|length > 20 %}
+                <div class="mt-8 flex justify-center">
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Anterior</span>
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">1</a>
+                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-wine-50 text-sm font-medium text-wine-600">2</a>
+                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">3</a>
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Próximo</span>
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addToCart(productId) {
+    {% if is_authenticated %}
+    fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Show success message
+        showFlashMessage('Produto adicionado ao carrinho!', 'success');
+    })
+    .catch(error => {
+        showFlashMessage('Erro ao adicionar produto ao carrinho', 'error');
+    });
+    {% else %}
+    window.location.href = '{{ url_for("login_page") }}';
+    {% endif %}
+}
+
+function showFlashMessage(message, type) {
+    const flashContainer = document.createElement('div');
+    flashContainer.className = `fixed top-4 right-4 z-40 alert alert-${type} px-4 py-3 rounded-md shadow-lg max-w-sm`;
+    flashContainer.innerHTML = `
+        <div class="flex items-center">
+            <span class="text-sm font-medium">${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-lg">&times;</button>
+        </div>
+    `;
+    document.body.appendChild(flashContainer);
+    
+    setTimeout(() => {
+        flashContainer.style.opacity = '0';
+        setTimeout(() => flashContainer.remove(), 300);
+    }, 3000);
+}
+</script>
+{% endblock %} 

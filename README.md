@@ -1,98 +1,260 @@
-# Vinihida Beverages
+# Vinihida Beverages - E-commerce Flask
 
-A full-stack e-commerce application for premium alcoholic beverages built with React, Flask, and PostgreSQL.
+Uma loja online premium de bebidas alcoólicas construída com Flask, oferecendo uma experiência moderna e responsiva com sistema completo de migrações de banco de dados.
 
-## Features
+## 🚀 Características
 
-- User authentication and authorization
-- Product browsing and filtering
-- Shopping cart functionality
-- Secure checkout process
-- Order management
-- Age verification
-- Responsive design
+- **Frontend completo em Flask**: Templates Jinja2 com Tailwind CSS
+- **Sistema de autenticação**: Login/registro com sessões Flask
+- **Carrinho de compras**: Funcionalidade completa de e-commerce
+- **Verificação de idade**: Modal de verificação obrigatória
+- **Design responsivo**: Interface moderna e otimizada para mobile
+- **Backend robusto**: APIs RESTful + renderização server-side
+- **Arquitetura limpa**: Application Factory Pattern
+- **Sistema de migrações**: Flask-Migrate para versionamento do banco
+- **Comandos CLI**: Gerenciamento completo via linha de comando
 
-## Prerequisites
+## 🛠️ Tecnologias
 
-- Node.js (v18 or higher)
-- Python (v3.8 or higher)
-- PostgreSQL
+- **Backend**: Flask 2.3.2, SQLAlchemy, Flask-JWT-Extended, Flask-Migrate
+- **Frontend**: Jinja2 Templates, Tailwind CSS, Alpine.js
+- **Banco de dados**: SQLite (desenvolvimento) / PostgreSQL (produção)
+- **Autenticação**: Flask-JWT-Extended + Sessions
+- **Migrações**: Alembic via Flask-Migrate
 
-## Installation
+## 📦 Instalação Rápida
 
-### Frontend Setup
-
-1. Install dependencies:
+### 1. Clone e configure o ambiente:
 ```bash
-npm install
-```
+git clone <repository-url>
+cd VinihidaBeverages
 
-2. Create a `.env` file in the root directory with:
-```
-VITE_API_URL=http://localhost:5000/api
-```
+# Crie e ative o ambiente virtual
+python3 -m venv venv
+source venv/bin/activate
 
-### Backend Setup
-
-1. Navigate to the backend directory:
-```bash
-cd backend
-```
-
-2. Create a virtual environment:
-```bash
-python -m venv venv
-```
-
-3. Activate the virtual environment:
-- Windows:
-  ```bash
-  venv\Scripts\activate
-  ```
-- Unix/MacOS:
-  ```bash
-  source venv/bin/activate
-  ```
-
-4. Install Python dependencies:
-```bash
+# Instale dependências
 pip install -r requirements.txt
 ```
 
-5. Create a `.env` file in the backend directory with:
-```
-SECRET_KEY=your-secret-key
-DATABASE_URL=postgresql://username:password@localhost:5432/vinihida
-JWT_SECRET_KEY=your-jwt-secret
-```
-
-## Running the Application
-
-1. Start the backend server:
+### 2. Inicialize o projeto:
 ```bash
-cd backend
-python app.py
+# Executa configuração completa automaticamente
+python3 init_project.py
 ```
 
-2. In a new terminal, start the frontend development server:
+### 3. Execute a aplicação:
 ```bash
-npm run dev
+python3 app.py
 ```
 
-The application will be available at `http://localhost:5173`
+Acesse: http://localhost:5000
 
-## Database Setup
+## 🗄️ Gerenciamento do Banco de Dados
 
-The application will automatically create the necessary tables and add sample data when you first run the backend server.
+### Comandos Flask CLI
 
-## Contributing
+```bash
+# Definir variável de ambiente
+export FLASK_APP=app.py
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+# Informações do banco
+flask show-tables              # Mostra tabelas e contadores
+flask backup-db                # Cria backup do banco
 
-## License
+# Gerenciamento de usuários
+flask create-admin             # Cria usuário administrador
+flask seed-db                  # Popula banco com dados de exemplo
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+# Migrações
+flask db init                  # Inicializa sistema de migrações
+flask db migrate -m "msg"      # Cria nova migração
+flask db upgrade               # Aplica migrações pendentes
+flask db downgrade             # Reverte última migração
+flask db history               # Mostra histórico de migrações
+flask db current               # Mostra versão atual
+```
+
+### Fluxo de Migrações
+
+1. **Modificar modelos** em `models.py`
+2. **Criar migração**:
+   ```bash
+   flask db migrate -m "Descrição da mudança"
+   ```
+3. **Revisar migração** em `migrations/versions/`
+4. **Aplicar migração**:
+   ```bash
+   flask db upgrade
+   ```
+
+### Exemplo de Migração
+
+```bash
+# Após modificar um modelo
+export FLASK_APP=app.py
+flask db migrate -m "Add stock column to products"
+flask db upgrade
+```
+
+## 📁 Estrutura do Projeto
+
+```
+VinihidaBeverages/
+├── app.py                    # Aplicação Flask principal
+├── models.py                 # Modelos SQLAlchemy
+├── config/                   # Configurações por ambiente
+│   ├── __init__.py
+│   └── settings.py
+├── templates/                # Templates Jinja2
+│   ├── base.html
+│   ├── index.html
+│   ├── login.html
+│   ├── register.html
+│   ├── products.html
+│   └── cart.html
+├── static/                   # Arquivos estáticos
+│   └── css/
+│       └── style.css
+├── migrations/               # Migrações do banco
+│   ├── versions/
+│   ├── alembic.ini
+│   ├── env.py
+│   └── script.py.mako
+├── instance/                 # Banco de dados SQLite
+│   └── ecommerce.db
+├── backups/                  # Backups do banco
+├── requirements.txt          # Dependências Python
+├── manage.py                 # Script de gerenciamento
+├── init_project.py          # Script de inicialização
+└── README.md
+```
+
+## 🔧 Scripts de Gerenciamento
+
+### init_project.py
+Script completo de inicialização que:
+- Configura banco de dados
+- Cria dados iniciais
+- Configura migrações
+- Cria usuário admin padrão
+
+### manage.py
+Script avançado com comandos:
+- `init_db` - Inicializa banco
+- `seed_db` - Popula dados
+- `reset_db` - Reseta banco
+- `backup_db` - Cria backup
+- `show_tables` - Mostra informações
+
+## 👤 Usuário Padrão
+
+Após executar `init_project.py`:
+- **Email**: admin@vinihida.com
+- **Senha**: admin123
+- **Tipo**: Administrador
+
+## 🔄 Comandos de Desenvolvimento
+
+```bash
+# Desenvolvimento
+python3 app.py                # Executa em modo debug
+
+# Banco de dados
+flask show-tables              # Status das tabelas
+flask backup-db                # Backup automático
+flask seed-db                  # Dados de exemplo
+
+# Migrações
+flask db migrate -m "msg"      # Nova migração
+flask db upgrade               # Aplica migrações
+flask db history               # Histórico
+
+# Produção
+gunicorn -w 4 -b 0.0.0.0:8000 app:app
+```
+
+## 🚀 Deploy
+
+### Desenvolvimento
+```bash
+python3 app.py
+```
+
+### Produção
+```bash
+# Com Gunicorn
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:8000 app:app
+
+# Com variáveis de ambiente
+export FLASK_ENV=production
+export DATABASE_URL=postgresql://user:pass@localhost/db
+gunicorn app:app
+```
+
+## 📊 Funcionalidades
+
+### E-commerce
+- ✅ Catálogo de produtos com categorias
+- ✅ Carrinho de compras persistente
+- ✅ Sistema de checkout
+- ✅ Histórico de pedidos
+- ✅ Gerenciamento de estoque
+
+### Autenticação
+- ✅ Registro e login de usuários
+- ✅ Sessões seguras
+- ✅ Níveis de acesso (admin/user)
+- ✅ Verificação de idade
+
+### Administração
+- ✅ Comandos CLI para gerenciamento
+- ✅ Sistema de backup automático
+- ✅ Migrações versionadas
+- ✅ Logs de atividade
+
+## 🔒 Segurança
+
+- Senhas hasheadas com Werkzeug
+- Proteção CSRF
+- Validação de entrada
+- Sessões seguras
+- Verificação de idade obrigatória
+
+## 📝 Logs e Monitoramento
+
+```bash
+# Logs da aplicação
+tail -f logs/app.log
+
+# Backup automático
+flask backup-db
+
+# Status do sistema
+flask show-tables
+```
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Faça commit das mudanças
+4. Crie uma migração se necessário
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
+
+## 🆘 Suporte
+
+Se você encontrar algum problema ou tiver dúvidas, por favor:
+
+1. Verifique as issues existentes
+2. Crie uma nova issue com detalhes do problema
+3. Inclua logs de erro se disponíveis
+
+---
+
+**Vinihida Beverages** - Sua loja premium de bebidas alcoólicas 🍷🥃🍺

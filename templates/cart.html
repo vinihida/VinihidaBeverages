@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Carrinho - Vinihida Beverages{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-serif font-bold text-gray-900 mb-8">Carrinho de Compras</h1>
+        
+        {% if cart_items %}
+        <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+            <!-- Cart items -->
+            <div class="lg:col-span-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="space-y-6">
+                        {% for item in cart_items %}
+                        <div class="flex items-center space-x-4 py-4 border-b border-gray-200" data-item-id="{{ item.id }}">
+                            <div class="flex-shrink-0">
+                                <img class="w-20 h-20 rounded-md object-cover" 
+                                     src="{{ item.product.image_url or 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=300&h=300&fit=crop&crop=center' }}" 
+                                     alt="{{ item.product.name }}">
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-lg font-medium text-gray-900">
+                                    <a href="{{ url_for('product_detail_page', product_id=item.product.id) }}" class="hover:text-wine-600">
+                                        {{ item.product.name }}
+                                    </a>
+                                </h3>
+                                <p class="text-sm text-gray-600 mt-1">{{ item.product.description[:100] }}...</p>
+                                <p class="text-lg font-semibold text-wine-600 mt-2">R$ {{ "%.2f"|format(item.product.price) }}</p>
+                            </div>
+                            
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateQuantity({{ item.id }}, {{ item.quantity - 1 }})" 
+                                        class="w-8 h-8 rounded-md border border-gray-300 flex items-center justify-center hover:bg-gray-50 {% if item.quantity <= 1 %}opacity-50 cursor-not-allowed{% endif %}"
+                                        {% if item.quantity <= 1 %}disabled{% endif %}>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                    </svg>
+                                </button>
+                                
+                                <span class="w-8 text-center font-medium">{{ item.quantity }}</span>
+                                
+                                <button onclick="updateQuantity({{ item.id }}, {{ item.quantity + 1 }})" 
+                                        class="w-8 h-8 rounded-md border border-gray-300 flex items-center justify-center hover:bg-gray-50">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="text-right">
+                                <p class="text-lg font-semibold text-gray-900">R$ {{ "%.2f"|format(item.subtotal) }}</p>
+                                <button onclick="removeFromCart({{ item.id }})" 
+                                        class="text-red-600 hover:text-red-800 text-sm mt-1">
+                                    Remover
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order summary -->
+            <div class="lg:col-span-4 mt-8 lg:mt-0">
+                <div class="bg-white rounded-lg shadow p-6 sticky top-4">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Resumo do Pedido</h2>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal ({{ cart_items|length }} item{% if cart_items|length != 1 %}s{% endif %})</span>
+                            <span class="font-medium">R$ {{ "%.2f"|format(total) }}</span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Frete</span>
+                            <span class="font-medium text-green-600">Grátis</span>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="flex justify-between text-lg font-semibold">
+                            <span>Total</span>
+                            <span class="text-wine-600">R$ {{ "%.2f"|format(total) }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <a href="{{ url_for('checkout_page') }}" 
+                           class="w-full bg-wine-600 hover:bg-wine-700 text-white py-3 px-4 rounded-md font-medium text-center block transition duration-300">
+                            Finalizar Compra
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('products_page') }}" 
+                           class="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-4 rounded-md font-medium text-center block transition duration-300">
+                            Continuar Comprando
+                        </a>
+                    </div>
+                    
+                    <!-- Trust badges -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex items-center space-x-4 text-sm text-gray-600">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                                <span>Compra Segura</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center mt-2 text-sm text-gray-600">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4-8-4m16 0v10l-8 4-8-4V7"></path>
+                            </svg>
+                            <span>Frete grátis para todo o Brasil</span>
+                        </div>
+                        
+                        <div class="flex items-center mt-2 text-sm text-gray-600">
+                            <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>Entrega em até 5 dias úteis</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- Empty cart -->
+        <div class="text-center py-12">
+            <div class="bg-white rounded-lg shadow p-8 max-w-md mx-auto">
+                <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 3M7 13l1.5 3m0 0h4.5m-4.5 0H9.5"></path>
+                </svg>
+                <h3 class="text-xl font-medium text-gray-900 mb-2">Seu carrinho está vazio</h3>
+                <p class="text-gray-600 mb-6">Adicione alguns produtos incríveis ao seu carrinho!</p>
+                <a href="{{ url_for('products_page') }}" 
+                   class="inline-block bg-wine-600 hover:bg-wine-700 text-white px-6 py-3 rounded-md font-medium transition duration-300">
+                    Explorar Produtos
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function updateQuantity(itemId, newQuantity) {
+    if (newQuantity < 1) return;
+    
+    fetch('/api/cart/update', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            item_id: itemId,
+            quantity: newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        location.reload();
+    })
+    .catch(error => {
+        showFlashMessage('Erro ao atualizar carrinho', 'error');
+    });
+}
+
+function removeFromCart(itemId) {
+    if (confirm('Tem certeza que deseja remover este item do carrinho?')) {
+        fetch(`/api/cart/remove?item_id=${itemId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            location.reload();
+        })
+        .catch(error => {
+            showFlashMessage('Erro ao remover item do carrinho', 'error');
+        });
+    }
+}
+
+function showFlashMessage(message, type) {
+    const flashContainer = document.createElement('div');
+    flashContainer.className = `fixed top-4 right-4 z-40 alert alert-${type} px-4 py-3 rounded-md shadow-lg max-w-sm`;
+    flashContainer.innerHTML = `
+        <div class="flex items-center">
+            <span class="text-sm font-medium">${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-lg">&times;</button>
+        </div>
+    `;
+    document.body.appendChild(flashContainer);
+    
+    setTimeout(() => {
+        flashContainer.style.opacity = '0';
+        setTimeout(() => flashContainer.remove(), 300);
+    }, 3000);
+}
+</script>
+{% endblock %} 

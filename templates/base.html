@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>{% block title %}Vinihida Beverages | Premium Drinks{% endblock %}</title>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Playfair Display', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'wine': {
+                            50: '#fdf2f8',
+                            100: '#fce7f3',
+                            200: '#fbcfe8',
+                            300: '#f9a8d4',
+                            400: '#f472b6',
+                            500: '#ec4899',
+                            600: '#db2777',
+                            700: '#be185d',
+                            800: '#9d174d',
+                            900: '#831843',
+                        },
+                        'gold': {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Age Verification Modal -->
+    {% if not session.get('age_verified') %}
+    <div id="age-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg max-w-md mx-4">
+            <h2 class="text-2xl font-serif font-bold mb-4">Verificação de Idade</h2>
+            <p class="mb-6 text-gray-600">Você tem 18 anos ou mais? Este site contém produtos alcoólicos.</p>
+            <div class="flex gap-4">
+                <button onclick="verifyAge(true)" class="bg-wine-600 hover:bg-wine-700 text-white px-6 py-2 rounded">
+                    Sim, tenho 18+
+                </button>
+                <button onclick="verifyAge(false)" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded">
+                    Não
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-4 right-4 z-40 space-y-2">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' }} px-4 py-3 rounded-md shadow-lg max-w-sm">
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium">{{ message }}</span>
+                            <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-lg">&times;</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="{{ url_for('home') }}" class="flex items-center">
+                        <span class="text-2xl font-serif font-bold text-wine-600">Vinihida</span>
+                        <span class="text-sm text-gray-500 ml-2">Beverages</span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="{{ url_for('home') }}" class="text-gray-700 hover:text-wine-600 px-3 py-2 rounded-md text-sm font-medium">Início</a>
+                        <a href="{{ url_for('products_page') }}" class="text-gray-700 hover:text-wine-600 px-3 py-2 rounded-md text-sm font-medium">Produtos</a>
+                        <a href="{{ url_for('products_page', category_id=1) }}" class="text-gray-700 hover:text-wine-600 px-3 py-2 rounded-md text-sm font-medium">Vinhos</a>
+                        <a href="{{ url_for('products_page', category_id=2) }}" class="text-gray-700 hover:text-wine-600 px-3 py-2 rounded-md text-sm font-medium">Whisky</a>
+                        <a href="{{ url_for('products_page', category_id=3) }}" class="text-gray-700 hover:text-wine-600 px-3 py-2 rounded-md text-sm font-medium">Cervejas</a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    {% if is_authenticated %}
+                        <a href="{{ url_for('cart_page') }}" class="relative text-gray-700 hover:text-wine-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 3M7 13l1.5 3m0 0h4.5m-4.5 0H9.5"></path>
+                            </svg>
+                        </a>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="text-gray-700 hover:text-wine-600 flex items-center space-x-1">
+                                <span>{{ current_user.first_name }}</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                <a href="{{ url_for('profile_page') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Perfil</a>
+                                <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sair</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login_page') }}" class="text-gray-700 hover:text-wine-600 px-3 py-2 rounded-md text-sm font-medium">Login</a>
+                        <a href="{{ url_for('register_page') }}" class="bg-wine-600 hover:bg-wine-700 text-white px-4 py-2 rounded-md text-sm font-medium">Cadastrar</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button type="button" class="text-gray-700 hover:text-wine-600" x-data="{ open: false }" @click="open = !open">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-serif font-bold text-wine-400">Vinihida</span>
+                        <span class="text-sm text-gray-400 ml-2">Beverages</span>
+                    </div>
+                    <p class="mt-4 text-gray-400 max-w-md">
+                        Sua loja premium de bebidas alcoólicas. Vinhos selecionados, whiskies especiais e cervejas artesanais.
+                    </p>
+                </div>
+                
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-300 tracking-wider uppercase">Produtos</h3>
+                    <ul class="mt-4 space-y-4">
+                        <li><a href="{{ url_for('products_page', category_id=1) }}" class="text-gray-400 hover:text-white">Vinhos</a></li>
+                        <li><a href="{{ url_for('products_page', category_id=2) }}" class="text-gray-400 hover:text-white">Whiskies</a></li>
+                        <li><a href="{{ url_for('products_page', category_id=3) }}" class="text-gray-400 hover:text-white">Cervejas</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-300 tracking-wider uppercase">Conta</h3>
+                    <ul class="mt-4 space-y-4">
+                        {% if is_authenticated %}
+                            <li><a href="{{ url_for('profile_page') }}" class="text-gray-400 hover:text-white">Meu Perfil</a></li>
+                            <li><a href="{{ url_for('cart_page') }}" class="text-gray-400 hover:text-white">Carrinho</a></li>
+                        {% else %}
+                            <li><a href="{{ url_for('login_page') }}" class="text-gray-400 hover:text-white">Login</a></li>
+                            <li><a href="{{ url_for('register_page') }}" class="text-gray-400 hover:text-white">Cadastrar</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-8 border-t border-gray-700 pt-8">
+                <p class="text-center text-gray-400">&copy; 2024 Vinihida Beverages. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function verifyAge(isAdult) {
+            if (isAdult) {
+                fetch('/verify-age', { method: 'POST' })
+                    .then(() => {
+                        document.getElementById('age-modal').style.display = 'none';
+                    });
+            } else {
+                window.location.href = 'https://www.google.com';
+            }
+        }
+        
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    </script>
+
+    <style>
+        .alert-success {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        .alert-error {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+    </style>
+</body>
+</html> 
